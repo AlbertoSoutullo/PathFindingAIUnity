@@ -46,33 +46,31 @@ namespace Assets.Scripts.Grupo5
         {
             List<CellInfo> cells = new List<CellInfo>();
             List<Node> nodes = new List<Node>();
-            for (int i = 0; i < 4; i++)
-            {
-                cells.Add(this.cell.WalkableNeighbours(boardInfo)[i]);
-            }
 
+            cells.AddRange(this.cell.WalkableNeighbours(boardInfo));
+            
             for (int i = 0; i < cells.Count; i++)
             {
-                if (this.father == null) //si no es el primer nodo
+                if (cells[i] != null)
                 {
-                    Debug.Log("El padre es null. \n");
-                    Node aux = new Node(this, cells[i], goals);
-                    Debug.Log(aux.ToString());
-                    nodes.Add(aux);
-
-                }
-                else
-                {
-                    Debug.Log("El padre no es null. \n");
-                    if (cells[i] != this.father.getCell())
+                    if (this.father == null) //si no es el primer nodo
                     {
                         Node aux = new Node(this, cells[i], goals);
                         Debug.Log(aux.ToString());
                         nodes.Add(aux);
+
+                    }
+                    else
+                    {
+                        if (!String.Equals(cells[i].CellId, this.father.getCell().CellId))
+                        {
+                            Node aux = new Node(this, cells[i], goals);
+                            Debug.Log(aux.ToString());
+                            nodes.Add(aux);
+                        }
                     }
                 }
             }
-            Debug.Log("asd" + nodes.Count);
             return nodes;
         }
 
@@ -95,8 +93,8 @@ namespace Assets.Scripts.Grupo5
                 }
                 else
                 {
-                    if (column > 0) return Locomotion.MoveDirection.Left;
-                    else return Locomotion.MoveDirection.Right;
+                    if (column > 0) return Locomotion.MoveDirection.Right;
+                    else return Locomotion.MoveDirection.Left;
                 }
             }
         }
@@ -118,7 +116,7 @@ namespace Assets.Scripts.Grupo5
 
         public override string ToString()
         {
-            string text = "Node: " + numberNodes + ", position (" + this.cell.RowId + ", " + this.cell.ColumnId + "), with movement: " + this.movement + "\n";
+            string text = "Node: " + numberNodes + ", position (" + this.cell.RowId + ", " + this.cell.ColumnId + "), with movement: " + this.movement + ". Distance: " + this.distance + "\n";
             return text;
         }
     }

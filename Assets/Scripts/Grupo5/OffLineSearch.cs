@@ -11,19 +11,17 @@ namespace Assets.Scripts.Grupo5
     {
 
         //Lista de Movimientos que va a devolver nuestro algoritmo
-        private Stack<Locomotion.MoveDirection> movements = null;
-        private List<Node> nodes = null; //abierta
+        private List<Locomotion.MoveDirection> movements = null;
+        private Stack<Node> nodesStack = null;
 
 
-
-        private bool test(List<Node> nodesToExpand, BoardInfo boardInfo, CellInfo[] goals)
+        private bool test(Stack<Node> nodesToExpand, BoardInfo boardInfo, CellInfo[] goals)
         {
             while (nodesToExpand.Count > 0)
             {
                 //Pillamos el nodo que toca expandir, y lo sacamos de la lista
-                Node actualNode = nodesToExpand[0];
-                this.movements.Push(actualNode.getMovement());
-                nodesToExpand.RemoveAt(0);
+                Node actualNode = nodesToExpand.Pop();
+                this.movements.Add(actualNode.getMovement());
                 print(actualNode.ToString());
                 //si ese nodo es goal, hemos acabado
                 for (int i = 0; i < goals.Length; i++)
@@ -37,43 +35,27 @@ namespace Assets.Scripts.Grupo5
                 //Expandimos los sucesores de este nodo (expand ya hace que esos sucesores apunten al padre)
                 List<Node> sucessors = new List<Node>();
                 sucessors = actualNode.Expand(boardInfo, goals);
-                print("Sucesores :" + sucessors.Count);
-                //Añadimos los sucesores a los nodos que tenemos que espandir
-                nodesToExpand.AddRange(sucessors);
-                print("Nodos a expandir: " + nodesToExpand.Count);
-                //Reordenamos los nodos
-                nodesToExpand.Sort(compareNodesByDistance);
-                
+
+                sucessors.Sort(compareNodesByDistance);
+
+                //Como los hemos ordenado de menor a mayor distancia, y al estar trabajando con una pila, los vamos a meter al revés
+                for (int i = sucessors.Count -1; i >= 0 ; i--)
+                {
+                    nodesToExpand.Push(sucessors[i]);
+                }
+
+                //Por que no funciona esto
+                /*
+                foreach (Node node in sucessors)
+                {
+                    nodesToExpand.Push(node);
+                }
+                */
+  
             }
             Debug.Log("Solution not found. \n");
             return false;
-
         }
-
-        //NO SE USA
-        //Metodo A* recursivo, donde le pasamos el nodo actual, la información del tablero y los goals.
-        //private bool aStarAlgorithm(Node actualNode, BoardInfo boardInfo, CellInfo[] goals)
-        //{
-        //    //Lista para guardar los descendientes
-        //    List<Node> decendents = new List<Node>();
-
-        //    //Primero miramos si ya estamos en una salida, y si lo estamos no devolvemos movimientos.
-        //    for (int i = 0; i < goals.Length; i++)
-        //    {
-        //        if (actualNode.getCell() == goals[i])
-        //        {
-        //            this.movements.Push(actualNode.getMovement());
-        //            return true;
-        //        }
-        //    }
-
-        //    //Sacamos los descendientes
-        //    decendents = actualNode.Expand(boardInfo);
-        //    //Ordenamos
-        //    decendents = sortDecendents(decendents, goals);
-
-        //    //
-        //}
 
         public override void Repath()
         {
@@ -85,12 +67,12 @@ namespace Assets.Scripts.Grupo5
         {
             if (this.movements == null)
             {
-                this.movements = new Stack<Locomotion.MoveDirection>();
-                this.nodes = new List<Node>();
+                this.movements = new List<Locomotion.MoveDirection>();
+                this.nodesStack = new Stack<Node>();
                 Node firstNode = new Node(null, currentPos, goals);
-                this.nodes.Add(firstNode);
+                this.nodesStack.Push(firstNode);
 
-                bool encontrado = test(this.nodes, boardInfo, goals);
+                bool encontrado = test(this.nodesStack, boardInfo, goals);
                 if (!encontrado)
                 {
                     print("Goal not found. \n");
@@ -104,24 +86,11 @@ namespace Assets.Scripts.Grupo5
             }
             else
             {
-                return this.movements.Pop();
+                Locomotion.MoveDirection aux = this.movements[0];
+                this.movements.RemoveAt(0);
+                return aux;
             }
         }
-
-        ////NO SE USA
-        ////Metodo para ordenar el array de nodos. (Heurística)
-        //private List<Node> sortDecendents(List<Node> Nodes, CellInfo[] goal)
-        //{
-        //    int[] numeros = new int[Nodes.Count];
-        //    for(int i=0; i< Nodes.Count; i++)
-        //    {
-        //        int column = Math.Abs(Nodes[i].getCell().ColumnId - goal[0].ColumnId);
-        //        int row = Math.Abs(Nodes[i].getCell().RowId - goal[0].RowId);
-        //        int dist = column + row;
-        //        numeros[i] = dist;
-        //    }  
-        //    return null;
-        //}
 
         //Método comparatorio que usaremos en el sort.
         private int compareNodesByDistance(Node x, Node y)
@@ -174,41 +143,3 @@ namespace Assets.Scripts.Grupo5
         }
     }
 }
-
-/*
-public class BusquedaAmplitud
-{
-    public Queue<Nodo> Abiertos { get; set; }
-    public BusquedaAmplitud()
-    {
-        Abiertos = new Queue<Nodo>();
-    }
-
-    public Nodo Buscar(Estado inicio, Estado meta)
-    {
-        inicio.Accion = "Inicio";
-        Nodo inicial = new Nodo(inicio, null);
-
-        Abiertos.Enqueue(inicial);
-        while (Abiertos.Count > 0)
-        {
-            Nodo actual = Abiertos.Dequeue();
-            if (EsMeta(actual, meta))
-            {
-                return actual;
-
-            }
-            foreach (var nodo in actual.Expandir())
-            {
-                Abiertos.Enqueue(nodo);
-            }
-        }
-        return null;
-    }
-
-    public bool EsMeta(Nodo actual, Estado meta)
-    {
-        return actual.Estado.EsMeta(meta);
-    }
-}
-*/
