@@ -46,16 +46,33 @@ namespace Assets.Scripts.Grupo5
         {
             List<CellInfo> cells = new List<CellInfo>();
             List<Node> nodes = new List<Node>();
-
             for (int i = 0; i < 4; i++)
             {
                 cells.Add(this.cell.WalkableNeighbours(boardInfo)[i]);
-                if (cells[i] != father.getCell())
+            }
+
+            for (int i = 0; i < cells.Count; i++)
+            {
+                if (this.father == null) //si no es el primer nodo
                 {
+                    Debug.Log("El padre es null. \n");
                     Node aux = new Node(this, cells[i], goals);
+                    Debug.Log(aux.ToString());
                     nodes.Add(aux);
+
+                }
+                else
+                {
+                    Debug.Log("El padre no es null. \n");
+                    if (cells[i] != this.father.getCell())
+                    {
+                        Node aux = new Node(this, cells[i], goals);
+                        Debug.Log(aux.ToString());
+                        nodes.Add(aux);
+                    }
                 }
             }
+            Debug.Log("asd" + nodes.Count);
             return nodes;
         }
 
@@ -99,6 +116,11 @@ namespace Assets.Scripts.Grupo5
             return this.distance;
         }
 
+        public override string ToString()
+        {
+            string text = "Node: " + numberNodes + ", position (" + this.cell.RowId + ", " + this.cell.ColumnId + "), with movement: " + this.movement + "\n";
+            return text;
+        }
     }
     
 }

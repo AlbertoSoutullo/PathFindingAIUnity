@@ -15,22 +15,16 @@ namespace Assets.Scripts.Grupo5
         private List<Node> nodes = null; //abierta
 
 
+
         private bool test(List<Node> nodesToExpand, BoardInfo boardInfo, CellInfo[] goals)
         {
-            while (true) // ??
+            while (nodesToExpand.Count > 0)
             {
-                //Si ya no quedan nodos para expandir, no hemos encontrado solucion
-                if (nodesToExpand == null)
-                {
-                    Debug.Log("Solution not found. \n");
-                    return false;
-                }
-
                 //Pillamos el nodo que toca expandir, y lo sacamos de la lista
                 Node actualNode = nodesToExpand[0];
-                nodesToExpand.Remove(actualNode);
                 this.movements.Push(actualNode.getMovement());
-
+                nodesToExpand.RemoveAt(0);
+                print(actualNode.ToString());
                 //si ese nodo es goal, hemos acabado
                 for (int i = 0; i < goals.Length; i++)
                 {
@@ -43,12 +37,16 @@ namespace Assets.Scripts.Grupo5
                 //Expandimos los sucesores de este nodo (expand ya hace que esos sucesores apunten al padre)
                 List<Node> sucessors = new List<Node>();
                 sucessors = actualNode.Expand(boardInfo, goals);
+                print("Sucesores :" + sucessors.Count);
                 //Añadimos los sucesores a los nodos que tenemos que espandir
                 nodesToExpand.AddRange(sucessors);
-
+                print("Nodos a expandir: " + nodesToExpand.Count);
                 //Reordenamos los nodos
                 nodesToExpand.Sort(compareNodesByDistance);
+                
             }
+            Debug.Log("Solution not found. \n");
+            return false;
 
         }
 
@@ -95,7 +93,7 @@ namespace Assets.Scripts.Grupo5
                 bool encontrado = test(this.nodes, boardInfo, goals);
                 if (!encontrado)
                 {
-                    print("Goal no encontrado");
+                    print("Goal not found. \n");
                 }
                 //Mirar si no ha encontrado goal.
                 //aStarAlgorithm(firstNode, boardInfo, goals);
@@ -176,3 +174,41 @@ namespace Assets.Scripts.Grupo5
         }
     }
 }
+
+/*
+public class BusquedaAmplitud
+{
+    public Queue<Nodo> Abiertos { get; set; }
+    public BusquedaAmplitud()
+    {
+        Abiertos = new Queue<Nodo>();
+    }
+
+    public Nodo Buscar(Estado inicio, Estado meta)
+    {
+        inicio.Accion = "Inicio";
+        Nodo inicial = new Nodo(inicio, null);
+
+        Abiertos.Enqueue(inicial);
+        while (Abiertos.Count > 0)
+        {
+            Nodo actual = Abiertos.Dequeue();
+            if (EsMeta(actual, meta))
+            {
+                return actual;
+
+            }
+            foreach (var nodo in actual.Expandir())
+            {
+                Abiertos.Enqueue(nodo);
+            }
+        }
+        return null;
+    }
+
+    public bool EsMeta(Nodo actual, Estado meta)
+    {
+        return actual.Estado.EsMeta(meta);
+    }
+}
+*/
