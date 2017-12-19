@@ -7,27 +7,36 @@ using System;
 
 namespace Assets.Scripts.Grupo5
 {
-    public class OffLineSearch : AbstractPathMind
+    public class OffLineSearchaStar : AbstractPathMind
     {
 
         //Lista de Movimientos que va a devolver nuestro algoritmo
-        private List<Locomotion.MoveDirection> movements = null;
-        private Stack<Node> nodesStack = null;
+        private Stack<Locomotion.MoveDirection> movements = null;
+        private Queue<Node> nodesQueue = null;
+        private List<Node> expandedNodes = new List<Node>();
 
 
-        private bool test(Stack<Node> nodesToExpand, BoardInfo boardInfo, CellInfo[] goals)
+        private bool aStar(Queue<Node> nodesToExpand, BoardInfo boardInfo, CellInfo[] goals)
         {
             while (nodesToExpand.Count > 0)
             {
                 //Pillamos el nodo que toca expandir, y lo sacamos de la lista
-                Node actualNode = nodesToExpand.Pop();
-                this.movements.Add(actualNode.getMovement());
+                Node actualNode = nodesToExpand.Dequeue();
+                print(actualNode.ToString());
+                this.expandedNodes.Add(actualNode);
                 print(actualNode.ToString());
                 //si ese nodo es goal, hemos acabado
                 for (int i = 0; i < goals.Length; i++)
                 {
                     if (actualNode.getCell() == goals[i])
                     {
+                        Node aux = actualNode;
+                        do {
+                            print(aux.ToString());
+                            this.movements.Push(aux.getMovement());
+                            aux = aux.getFather();
+
+                        } while (aux.getFather() != null);
                         return true;
                     }
                 }
@@ -41,7 +50,15 @@ namespace Assets.Scripts.Grupo5
                 //Como los hemos ordenado de menor a mayor distancia, y al estar trabajando con una pila, los vamos a meter al revés
                 for (int i = sucessors.Count -1; i >= 0 ; i--)
                 {
-                    nodesToExpand.Push(sucessors[i]);
+                    bool found = false; //flag para mirar si los sucesores no han sido metidos ya en la lista de nodos expandidos.
+                    for (int j = 0; j < this.expandedNodes.Count; j++)
+                    {
+                        if (this.expandedNodes[j].isEqual(sucessors[i]))
+                            found = true;
+                    }
+                    if (!found)
+                        nodesToExpand.Enqueue(sucessors[i]);
+                    
                 }
 
                 //Por que no funciona esto
@@ -67,12 +84,12 @@ namespace Assets.Scripts.Grupo5
         {
             if (this.movements == null)
             {
-                this.movements = new List<Locomotion.MoveDirection>();
-                this.nodesStack = new Stack<Node>();
+                this.movements = new Stack<Locomotion.MoveDirection>();
+                this.nodesQueue = new Queue<Node>();
                 Node firstNode = new Node(null, currentPos, goals);
-                this.nodesStack.Push(firstNode);
+                this.nodesQueue.Enqueue(firstNode);
 
-                bool encontrado = test(this.nodesStack, boardInfo, goals);
+                bool encontrado = aStar(this.nodesQueue, boardInfo, goals);
                 if (!encontrado)
                 {
                     print("Goal not found. \n");
@@ -86,9 +103,7 @@ namespace Assets.Scripts.Grupo5
             }
             else
             {
-                Locomotion.MoveDirection aux = this.movements[0];
-                this.movements.RemoveAt(0);
-                return aux;
+                return this.movements.Pop();
             }
         }
 

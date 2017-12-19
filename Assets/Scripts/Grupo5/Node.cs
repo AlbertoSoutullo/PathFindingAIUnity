@@ -17,6 +17,7 @@ namespace Assets.Scripts.Grupo5
         private Locomotion.MoveDirection movement;
         private int distance;
         private static int numberNodes = 0;
+        private int id;
 
         public CellInfo getCell()
         {
@@ -33,7 +34,7 @@ namespace Assets.Scripts.Grupo5
         //de la celda en la que está el personaje
         public Node(Node father, CellInfo cell, CellInfo[] goals)
         {
-            numberNodes++;
+            this.id = numberNodes++;
             this.cell = cell;
             this.father = father;
             this.movement = getDirection();
@@ -116,8 +117,21 @@ namespace Assets.Scripts.Grupo5
 
         public override string ToString()
         {
-            string text = "Node: " + numberNodes + ", position (" + this.cell.RowId + ", " + this.cell.ColumnId + "), with movement: " + this.movement + ". Distance: " + this.distance + "\n";
+            string text = "Node: " + this.id + ", position (" + this.cell.RowId + ", " + this.cell.ColumnId + "), with movement: " + this.movement + ". Distance: " + this.distance + "\n";
             return text;
+        }
+
+        public bool isEqual(Node node)
+        {
+            if ((this.cell.ColumnId == node.cell.ColumnId) && (this.cell.RowId == node.cell.RowId))
+                return true;
+            else
+                return false;
+        }
+
+        public Node getFather()
+        {
+            return this.father;
         }
     }
     

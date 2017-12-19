@@ -152,7 +152,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 629658569}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e9a8b5a0e3a26a42b4443514fa79c11, type: 3}
+  m_Script: {fileID: 11500000, guid: 53e3ea2370e2e77419475a4f6033b4be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &760955683
@@ -181,6 +181,7 @@ AudioListener:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 760955683}
   m_Enabled: 1
+  m_ExtensionPropertyValues: []
 --- !u!124 &760955685
 Behaviour:
   m_ObjectHideFlags: 0
@@ -230,6 +231,7 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+  m_StereoMirrorMode: 0
 --- !u!4 &760955688
 Transform:
   m_ObjectHideFlags: 0
@@ -272,7 +274,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameManager: {fileID: 198952, guid: 1f54754c41c64a04aac6945bc71af6ca, type: 2}
   Planner: 0
-  seed: 1222
+  seed: 4186
   numEnemies: 0
 --- !u!4 &1401979017
 Transform:
