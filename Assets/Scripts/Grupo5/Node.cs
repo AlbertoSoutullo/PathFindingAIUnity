@@ -34,19 +34,20 @@ namespace Assets.Scripts.Grupo5
         //de la celda en la que está el personaje
         public Node(Node father, CellInfo cell, CellInfo[] goals)
         {
-            this.id = numberNodes++;
+            this.id = numberNodes;
             this.cell = cell;
             this.father = father;
             this.movement = getDirection();
             this.distance = calculateDistance(goals);
-            Debug.Log("Node " + numberNodes + "created. \n");
+            numberNodes++;
         }
 
         //Método para expandir los nodos a partir del nodo en el que nos encontramos.
-        public List<Node> Expand(BoardInfo boardInfo, CellInfo[] goals)
+        public List<Node> Expand(BoardInfo boardInfo, CellInfo[] goals, List<Node> expandedNodes)
         {
             List<CellInfo> cells = new List<CellInfo>();
-            List<Node> nodes = new List<Node>();
+            List<Node> nodes     = new List<Node>();
+            List<Node> auxList   = new List<Node>();
 
             cells.AddRange(this.cell.WalkableNeighbours(boardInfo));
             
@@ -54,11 +55,11 @@ namespace Assets.Scripts.Grupo5
             {
                 if (cells[i] != null)
                 {
-                    if (this.father == null) //si no es el primer nodo
+                    if (this.father == null) //si es el primer nodo
                     {
-                        Node aux = new Node(this, cells[i], goals);
-                        Debug.Log(aux.ToString());
-                        nodes.Add(aux);
+                        Node aux = new Node(this, cells[i], goals);                      
+                        //Debug.Log(this.ToString());
+                        auxList.Add(aux);
 
                     }
                     else
@@ -66,10 +67,23 @@ namespace Assets.Scripts.Grupo5
                         if (!String.Equals(cells[i].CellId, this.father.getCell().CellId))
                         {
                             Node aux = new Node(this, cells[i], goals);
-                            Debug.Log(aux.ToString());
-                            nodes.Add(aux);
+                            //Debug.Log(this.ToString());
+                            auxList.Add(aux);
                         }
                     }
+                }
+            }
+            for (int i = 0; i < auxList.Count; i++)
+            {
+                bool found = false; //flag para mirar si los sucesores no han sido metidos ya en la lista de nodos expandidos.
+                for (int j = 0; j < expandedNodes.Count; j++)
+                {
+                    if (expandedNodes[j].isEqual(auxList[i]))
+                        found = true;
+                }
+                if (!found)
+                {
+                    nodes.Add(auxList[i]);
                 }
             }
             return nodes;

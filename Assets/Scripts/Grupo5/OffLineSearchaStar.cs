@@ -9,6 +9,7 @@ namespace Assets.Scripts.Grupo5
 {
     public class OffLineSearchaStar : AbstractPathMind
     {
+        static int numNodosExpandidos=0;
 
         //Lista de Movimientos que va a devolver nuestro algoritmo
         private Stack<Locomotion.MoveDirection> movements = null;
@@ -22,9 +23,9 @@ namespace Assets.Scripts.Grupo5
             {
                 //Pillamos el nodo que toca expandir, y lo sacamos de la lista
                 Node actualNode = nodesToExpand.Dequeue();
-                print(actualNode.ToString());
-                this.expandedNodes.Add(actualNode);
-                print(actualNode.ToString());
+                numNodosExpandidos++;
+                print("Node to expand: " + actualNode.ToString());
+                print(" num nodos expandidos " + numNodosExpandidos);
                 //si ese nodo es goal, hemos acabado
                 for (int i = 0; i < goals.Length; i++)
                 {
@@ -32,7 +33,6 @@ namespace Assets.Scripts.Grupo5
                     {
                         Node aux = actualNode;
                         do {
-                            print(aux.ToString());
                             this.movements.Push(aux.getMovement());
                             aux = aux.getFather();
 
@@ -43,22 +43,14 @@ namespace Assets.Scripts.Grupo5
 
                 //Expandimos los sucesores de este nodo (expand ya hace que esos sucesores apunten al padre)
                 List<Node> sucessors = new List<Node>();
-                sucessors = actualNode.Expand(boardInfo, goals);
-
+                sucessors = actualNode.Expand(boardInfo, goals, this.expandedNodes);
                 sucessors.Sort(compareNodesByDistance);
 
-                //Como los hemos ordenado de menor a mayor distancia, y al estar trabajando con una pila, los vamos a meter al revés
-                for (int i = sucessors.Count -1; i >= 0 ; i--)
+
+                for (int i = 0; i < sucessors.Count ; i++)
                 {
-                    bool found = false; //flag para mirar si los sucesores no han sido metidos ya en la lista de nodos expandidos.
-                    for (int j = 0; j < this.expandedNodes.Count; j++)
-                    {
-                        if (this.expandedNodes[j].isEqual(sucessors[i]))
-                            found = true;
-                    }
-                    if (!found)
-                        nodesToExpand.Enqueue(sucessors[i]);
-                    
+                    nodesToExpand.Enqueue(sucessors[i]);
+                    this.expandedNodes.Add(sucessors[i]);
                 }
 
                 //Por que no funciona esto
@@ -95,7 +87,10 @@ namespace Assets.Scripts.Grupo5
                     print("Goal not found. \n");
                 }
                 //Mirar si no ha encontrado goal.
-                //aStarAlgorithm(firstNode, boardInfo, goals);
+                else
+                {
+
+                }
             }
             if (this.movements.Count == 0)
             {
