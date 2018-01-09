@@ -24,7 +24,11 @@ namespace Assets.Scripts.DataStructures
         public int NumRows { get; private set; }
         public CellInfo[,] CellInfos { get; set; }
 
-        public List<GameObject> Enemies { get; set; }
+        public List<EnemyBehaviour> Enemies
+        {
+            get { return GameObject.FindObjectsOfType<EnemyBehaviour>().ToList(); }
+            set { }
+        }
 
         public List<PlaceableItem> ItemsOnBoard
         {
@@ -70,7 +74,7 @@ namespace Assets.Scripts.DataStructures
                     this.CellInfos[x, y] = new CellInfo(x, y);
                 }
             }
-            this.Enemies = new List<GameObject>();
+            
         }
 
         private void LayoutWallAtRandom(int minWalls, int maxWalls)
@@ -150,11 +154,11 @@ namespace Assets.Scripts.DataStructures
             do
             {
                 value = UnityEngine.Random.Range(-1, generatedObjects.Count - 1);
-                if (value > 0)
+                if (value >= 0)
                 {
                     values.Add(value);
                 }
-            } while (value > 0);
+            } while (value >= 0);
             foreach (var i in values)
             {
                 item.Preconditions.Add(generatedObjects[i]);

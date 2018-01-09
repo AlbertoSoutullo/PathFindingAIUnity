@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.DataStructures;
 using UnityEngine;
@@ -13,8 +14,24 @@ namespace Assets.Scripts
         public Sprite ActiveSprite;
 
         public PlaceableItem.ItemType Type;
+        
         public PlaceableItem PlaceableItem { get; set; }
+        
+        public string RequieredTags
+        {
+            get
+            {
+                var str = "Reqs: ";
+                return PlaceableItem.Preconditions.Aggregate(str,(curr, next) => curr + ", " + next.Tag);
 
+            }
+        }
+
+        public void Start()
+        {
+            Debug.Log(Tag+ ">"+ RequieredTags);
+            
+        }
         void OnTriggerEnter2D(Collider2D collider2D)
 
         {
@@ -49,6 +66,7 @@ namespace Assets.Scripts
         {
             Vector3 pos = Camera.main.WorldToScreenPoint(transform.position);
             GUI.Label(new Rect(pos.x-25,Screen.height-pos.y,70,20), Tag );
+            GUI.Label(new Rect(pos.x - 25, Screen.height - pos.y - 20, 370, 20), RequieredTags);
         }
     }
 }

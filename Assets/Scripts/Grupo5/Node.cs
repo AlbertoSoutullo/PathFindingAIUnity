@@ -15,7 +15,8 @@ namespace Assets.Scripts.Grupo5
         private Node father { get; set; }
         private CellInfo cell;
         private Locomotion.MoveDirection movement;
-        private int distance;
+        private float distance = 0;
+        private float totalWalkCost = 0;
         private static int numberNodes = 0;
         private int id;
 
@@ -39,12 +40,26 @@ namespace Assets.Scripts.Grupo5
             this.father = father;
             this.movement = getDirection();
             this.distance = calculateDistance(goals);
+            this.totalWalkCost = calculateWalkCost();
             numberNodes++;
+        }
+
+        private float calculateWalkCost()
+        {
+            if (this.getFather() == null)
+            {
+                return 0;
+            }
+            else
+            {
+                return (this.getCell().WalkCost + this.getFather().totalWalkCost);
+            }  
         }
 
         //Método para expandir los nodos a partir del nodo en el que nos encontramos.
         public List<Node> Expand(BoardInfo boardInfo, CellInfo[] goals, List<Node> expandedNodes)
         {
+            
             List<CellInfo> cells = new List<CellInfo>();
             List<Node> nodes     = new List<Node>();
             List<Node> auxList   = new List<Node>();
@@ -84,6 +99,7 @@ namespace Assets.Scripts.Grupo5
                 if (!found)
                 {
                     nodes.Add(auxList[i]);
+                    expandedNodes.Add(auxList[i]);
                 }
             }
             return nodes;
@@ -115,16 +131,16 @@ namespace Assets.Scripts.Grupo5
         }
 
         //Calculamos el coste de este nodo para poder usarlo en la comparación del sort.
-        public int calculateDistance(CellInfo[] goals)
+        public float calculateDistance(CellInfo[] goals)
         {
             int column = Math.Abs(this.getCell().ColumnId - goals[0].ColumnId);
             int row = Math.Abs(this.getCell().RowId - goals[0].RowId);
-            int dist = column + row;
-
+            float dist = column + row;
+            dist += this.getCell().WalkCost;
             return dist;
         }
 
-        public int getDistance()
+        public float getDistance()
         {
             return this.distance;
         }

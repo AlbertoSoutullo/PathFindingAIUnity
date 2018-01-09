@@ -13,44 +13,62 @@ namespace Assets.Scripts.Grupo5
 
         //Lista de Movimientos que va a devolver nuestro algoritmo
         private Stack<Locomotion.MoveDirection> movements = null;
-        private Queue<Node> nodesQueue = null;
+        private List<Node> nodesToExpand = null;
         private List<Node> expandedNodes = new List<Node>();
 
 
-        private bool aStar(Queue<Node> nodesToExpand, BoardInfo boardInfo, CellInfo[] goals)
+        private bool aStar(List<Node> nodesToExpand, BoardInfo boardInfo, CellInfo[] goals)
         {
+            //variablle para ver si ya se ha insertado el nodo en el
+            bool insertado = false;
             while (nodesToExpand.Count > 0)
             {
                 //Pillamos el nodo que toca expandir, y lo sacamos de la lista
-                Node actualNode = nodesToExpand.Dequeue();
+                Node actualNode = nodesToExpand[0];
+                nodesToExpand.RemoveAt(0);
                 numNodosExpandidos++;
-                print("Node to expand: " + actualNode.ToString());
-                print(" num nodos expandidos " + numNodosExpandidos);
+                
                 //si ese nodo es goal, hemos acabado
                 for (int i = 0; i < goals.Length; i++)
                 {
                     if (actualNode.getCell() == goals[i])
                     {
+                        numNodosExpandidos--;
+
                         Node aux = actualNode;
                         do {
                             this.movements.Push(aux.getMovement());
                             aux = aux.getFather();
 
                         } while (aux.getFather() != null);
+                        print("Numero de nodos expandidos al final: " + numNodosExpandidos);
                         return true;
                     }
                 }
+                print("Node to expand: " + actualNode.ToString());
+                print("Numero de nodos expandidos " + numNodosExpandidos);
 
                 //Expandimos los sucesores de este nodo (expand ya hace que esos sucesores apunten al padre)
                 List<Node> sucessors = new List<Node>();
                 sucessors = actualNode.Expand(boardInfo, goals, this.expandedNodes);
-                sucessors.Sort(compareNodesByDistance);
+                //sucessors.Sort(compareNodesByDistance);
 
 
                 for (int i = 0; i < sucessors.Count ; i++)
                 {
-                    nodesToExpand.Enqueue(sucessors[i]);
-                    this.expandedNodes.Add(sucessors[i]);
+                    insertado = false;
+                    for (int j = 0; j < nodesToExpand.Count; j++)
+                    {
+                        if (nodesToExpand[j].getDistance() > sucessors[i].getDistance() && !insertado)
+                        {
+                            nodesToExpand.Insert(j, sucessors[i]);
+                            insertado = true;
+                        }
+                    }
+                    if (!insertado)
+                    {
+                        nodesToExpand.Add(sucessors[i]);
+                    }
                 }
 
                 //Por que no funciona esto
@@ -77,11 +95,11 @@ namespace Assets.Scripts.Grupo5
             if (this.movements == null)
             {
                 this.movements = new Stack<Locomotion.MoveDirection>();
-                this.nodesQueue = new Queue<Node>();
+                this.nodesToExpand = new List<Node>();
                 Node firstNode = new Node(null, currentPos, goals);
-                this.nodesQueue.Enqueue(firstNode);
+                this.nodesToExpand.Add(firstNode);
 
-                bool encontrado = aStar(this.nodesQueue, boardInfo, goals);
+                bool encontrado = aStar(this.nodesToExpand, boardInfo, goals);
                 if (!encontrado)
                 {
                     print("Goal not found. \n");
