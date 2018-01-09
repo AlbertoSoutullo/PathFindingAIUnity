@@ -17,6 +17,7 @@ namespace Assets.Scripts.Grupo5
         private Locomotion.MoveDirection movement;
         private float distance = 0;
         private float totalWalkCost;
+        private int horizon = 0;
         private static int numberNodes = 0;
         private int id;
 
@@ -162,6 +163,16 @@ namespace Assets.Scripts.Grupo5
         public Node getFather()
         {
             return this.father;
+        }
+
+        public int GetHorizon()
+        {
+            return this.horizon;
+        }
+
+        public void SetHorizon(int horizon)
+        {
+            this.horizon = horizon;
         }
     }
     
