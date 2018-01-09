@@ -16,7 +16,7 @@ namespace Assets.Scripts.Grupo5
         private CellInfo cell;
         private Locomotion.MoveDirection movement;
         private float distance = 0;
-        private float totalWalkCost = 0;
+        private float totalWalkCost;
         private static int numberNodes = 0;
         private int id;
 
@@ -39,20 +39,20 @@ namespace Assets.Scripts.Grupo5
             this.cell = cell;
             this.father = father;
             this.movement = getDirection();
-            this.distance = calculateDistance(goals);
             this.totalWalkCost = calculateWalkCost();
+            this.distance = calculateDistance(goals);
             numberNodes++;
         }
 
         private float calculateWalkCost()
         {
-            if (this.getFather() == null)
+            if (this.father == null)
             {
                 return 0;
             }
             else
             {
-                return (this.getCell().WalkCost + this.getFather().totalWalkCost);
+                return (this.cell.WalkCost + this.father.totalWalkCost);
             }  
         }
 
@@ -136,7 +136,8 @@ namespace Assets.Scripts.Grupo5
             int column = Math.Abs(this.getCell().ColumnId - goals[0].ColumnId);
             int row = Math.Abs(this.getCell().RowId - goals[0].RowId);
             float dist = column + row;
-            dist += this.getCell().WalkCost;
+            Debug.Log(this.totalWalkCost);
+            dist += this.totalWalkCost;
             return dist;
         }
 
