@@ -136,7 +136,6 @@ namespace Assets.Scripts.Grupo5
             int column = Math.Abs(this.getCell().ColumnId - goals[0].ColumnId);
             int row = Math.Abs(this.getCell().RowId - goals[0].RowId);
             float dist = column + row;
-            Debug.Log(this.totalWalkCost);
             dist += this.totalWalkCost;
             return dist;
         }

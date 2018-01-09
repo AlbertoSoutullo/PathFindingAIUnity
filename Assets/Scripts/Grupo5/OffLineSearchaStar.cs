@@ -59,7 +59,9 @@ namespace Assets.Scripts.Grupo5
                     insertado = false;
                     for (int j = 0; j < nodesToExpand.Count; j++)
                     {
-                        if (nodesToExpand[j].getDistance() > sucessors[i].getDistance() && !insertado)
+                        //Con el igual lo que hace es priorizar un camino ya que sabemos que al ser una parrilla, no vamos
+                        //a expandir dos veces lo mismo al avanzar en diagonal, ya que arriba derecha es igual que derecha arriba
+                        if (nodesToExpand[j].getDistance() >= sucessors[i].getDistance() && !insertado)
                         {
                             nodesToExpand.Insert(j, sucessors[i]);
                             insertado = true;
@@ -71,13 +73,6 @@ namespace Assets.Scripts.Grupo5
                     }
                 }
 
-                //Por que no funciona esto
-                /*
-                foreach (Node node in sucessors)
-                {
-                    nodesToExpand.Push(node);
-                }
-                */
   
             }
             Debug.Log("Solution not found. \n");
