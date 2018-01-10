@@ -42,6 +42,15 @@ namespace Assets.Scripts.Grupo5
             this.movement = getDirection();
             this.totalWalkCost = calculateWalkCost();
             this.distance = calculateDistance(goals);
+            if (this.father == null)
+            {
+                this.horizon = 1;
+            }
+            else
+            {
+                this.horizon = this.father.horizon + 1;
+            }
+            
             numberNodes++;
         }
 
@@ -60,7 +69,6 @@ namespace Assets.Scripts.Grupo5
         //Método para expandir los nodos a partir del nodo en el que nos encontramos.
         public List<Node> Expand(BoardInfo boardInfo, CellInfo[] goals, List<Node> expandedNodes)
         {
-            
             List<CellInfo> cells = new List<CellInfo>();
             List<Node> nodes     = new List<Node>();
             List<Node> auxList   = new List<Node>();
