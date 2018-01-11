@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Assets.Scripts.DataStructures;
+using Assets.Scripts.Grupo5;
 
 namespace Assets.Scripts.Grupo5
 {
@@ -10,9 +11,12 @@ namespace Assets.Scripts.Grupo5
     {
         static int numNodosExpandidos = 0;
         public int horizon = 3;
+        public int maxLoopMovements = 20;
         private float alpha = float.MaxValue;
+        int[] loopIterations = new int[5] { 0, 0, 0, 0 , 0};
+        public bool exitLoops = false;
 
-        private Stack<Locomotion.MoveDirection> movements = null;
+        private Stack<Locomotion.MoveDirection> movements = new Stack<Locomotion.MoveDirection>();
 
 
         private Node onLineSearch(Node firstNode, BoardInfo boardInfo, CellInfo[] enemy, CellInfo[] goals)
@@ -35,6 +39,11 @@ namespace Assets.Scripts.Grupo5
                 nodesToExpand.RemoveAt(0);
                 numNodosExpandidos++;
 
+                if (actualNode.getCell() == enemy[0])
+                {
+                    return actualNode;
+                }
+
                 if (!(actualNode.getDistance() >= alpha))
                 {
                     //Si no hemos llegado al horizonte, expandimos.
@@ -45,9 +54,12 @@ namespace Assets.Scripts.Grupo5
                         sucessors = actualNode.Expand(boardInfo, enemy, expandedNodes);
                         print("Sucesores : " + sucessors.Count);
 
-
                         for (int i = 0; i < sucessors.Count; i++)
                         {
+                            if (sucessors[i].getCell() == enemy[0])
+                            {
+                                return actualNode;
+                            }
                             isGoal = false;
                             for (int k = 0; k < goals.Length; k++)
                             {
@@ -91,18 +103,6 @@ namespace Assets.Scripts.Grupo5
                     }
                 }
             }
-            /*
-            Node aux = bestNode;
-            int backSteps = 0;
-            do
-            {
-                movements.Push(aux.getMovement());
-                aux = aux.getFather();
-                backSteps++;
-
-            } while ((aux.getFather() != null) && (backSteps < 3) );
-            */
-            //print("Best node: " + bestNode.ToString());
             return bestNode;
         }
 
@@ -114,59 +114,27 @@ namespace Assets.Scripts.Grupo5
 
         public override void Repath()
         {
-            movements = new Stack<Locomotion.MoveDirection>();
+
             
 
         }
 
         public override Locomotion.MoveDirection GetNextMove(BoardInfo boardInfo, CellInfo currentPos, CellInfo[] goals)
         {
-
             List<EnemyBehaviour> enemies = boardInfo.Enemies;
-            
+
             if (enemies.Count == 0)
-            {   /*
-                bool encontrado = false;
-                List<Node> nodes = new List<Node>();
-                Node currentNode = new Node(null, currentPos, goals);
-                nodes.Add(currentNode);
-                OffLineSearchaStar astar = GetComponent<OffLineSearchaStar>();
-                encontrado = astar.aStar(nodes, boardInfo, goals);
-                print("RESULTADO A*    ASDASDASDASDASDA    " + encontrado);
-                movements = astar.movements;
-
-                while (movements.Count > 0)
+            {
+                if (this.movements.Count == 0)
                 {
-                    return astar.GetNextMove(boardInfo,currentPos, goals);
-                    
+                    bool encontrado = false;
+                    List<Node> nodes = new List<Node>();
+                    Node currentNode = new Node(null, currentPos, goals);
+                    nodes.Add(currentNode);
+                    OffLineSearchaStar astar = new OffLineSearchaStar();
+                    encontrado = astar.aStar(nodes, boardInfo, goals, this.movements);
                 }
-                return Locomotion.MoveDirection.None;*/
-                CellInfo[] enemyInfo = new CellInfo[1];
-                enemyInfo[0] = enemies[0].CurrentPosition();
-                print("Caminable " + enemyInfo[0].Walkable);
-                if (enemyInfo[0].Walkable == true)
-                {
-                    Node firstNode = new Node(null, currentPos, enemyInfo);
-
-                    Node node = null;
-                    node = onLineSearch(firstNode, boardInfo, goals, null);
-                    if (node != null)
-                    {
-                        print("holahola" + node.ToString());
-                        while (node.getFather().getFather().getFather() != null)
-                        {
-                            node = node.getFather();
-                        }
-                        print(node.ToString());
-                        return node.getFather().getMovement();
-                    }
-                    else return Locomotion.MoveDirection.None;
-                }
-                else
-                {
-                    return Locomotion.MoveDirection.None;
-                }
-
+                return this.movements.Pop(); ;
             }
             else
             {
@@ -187,6 +155,31 @@ namespace Assets.Scripts.Grupo5
                             node = node.getFather();
                         }
                         print(node.ToString());
+
+                        if (exitLoops)
+                        {
+                            if (node.getFather().getMovement() == Locomotion.MoveDirection.Up) loopIterations[0]++;
+                            if (node.getFather().getMovement() == Locomotion.MoveDirection.Right) loopIterations[1]++;
+                            if (node.getFather().getMovement() == Locomotion.MoveDirection.Down) loopIterations[2]++;
+                            if (node.getFather().getMovement() == Locomotion.MoveDirection.Left) loopIterations[3]++;
+                            loopIterations[4]++;
+
+                            if (loopIterations[4] == maxLoopMovements)
+                            {
+                                int diferents = 0;
+                                for (int i = 0; i < loopIterations.Length - 1; i++)
+                                {
+                                    if (loopIterations[i] == 0) diferents++;
+                                }
+                                if (diferents == 2)
+                                {
+                                    horizon++;
+                                }
+                                Array.Clear(loopIterations, 0, loopIterations.Length);
+                            }
+                        }
+                        
+
                         return node.getFather().getMovement();
                     }
                     else return Locomotion.MoveDirection.None;
@@ -197,44 +190,6 @@ namespace Assets.Scripts.Grupo5
                 }
 
             }
-
-            
-
-
-            /*
-            if (this.movements == null)
-            {
-                List<EnemyBehaviour> enemies = boardInfo.Enemies;
-                CellInfo[] enemyInfo = new CellInfo[3];
-                enemyInfo[0] = enemies[0].CurrentPosition();
-
-                print(enemyInfo[0].GetPosition);
-                Node firstNode = new Node(null, currentPos, enemyInfo);
-                this.movements = new Stack<Locomotion.MoveDirection>();
-
-                bool encontrado = onLineSearch(firstNode, boardInfo, enemyInfo);
-                if (!encontrado)
-                {
-                    print("Goal not found. \n");
-                }
-                //Mirar si no ha encontrado goal.
-                else
-                {
-
-                }
-            }
-            if (this.movements.Count == 0)
-            {
-                return Locomotion.MoveDirection.None;
-            }
-            else
-            {
-                Locomotion.MoveDirection moveAux = this.movements.Pop();
-                Repath();
-                print(moveAux);
-                return moveAux;
-            }
-            */
 
         }
 

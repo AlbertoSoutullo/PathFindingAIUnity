@@ -11,13 +11,17 @@ namespace Assets.Scripts.Grupo5
     {
         static int numNodosExpandidos=0;
 
-        //Lista de Movimientos que va a devolver nuestro algoritmo
+
+
+    
         public Stack<Locomotion.MoveDirection> movements = null;
         private List<Node> nodesToExpand = null;
         private List<Node> expandedNodes = new List<Node>();
+        
 
 
-        public bool aStar(List<Node> nodesToExpand, BoardInfo boardInfo, CellInfo[] goals)
+
+        public bool aStar(List<Node> nodesToExpand, BoardInfo boardInfo, CellInfo[] goals, Stack<Locomotion.MoveDirection> moves)
         {
             //variablle para ver si ya se ha insertado el nodo en el
             bool insertado = false;
@@ -37,7 +41,7 @@ namespace Assets.Scripts.Grupo5
 
                         Node aux = actualNode;
                         do {
-                            this.movements.Push(aux.getMovement());
+                            moves.Push(aux.getMovement());
                             aux = aux.getFather();
 
                         } while (aux.getFather() != null);
@@ -87,14 +91,15 @@ namespace Assets.Scripts.Grupo5
 
         public override Locomotion.MoveDirection GetNextMove(BoardInfo boardInfo, CellInfo currentPos, CellInfo[] goals)
         {
+            print("AQUI LLAMAMOS A ASTARTTARAUSDUASDSADSADASDASDASDASDSADSADSADADASDASDSADASDSADAS");
             if (this.movements == null)
             {
-                this.movements = new Stack<Locomotion.MoveDirection>();
+                Stack<Locomotion.MoveDirection>  moves = new Stack<Locomotion.MoveDirection>();
                 this.nodesToExpand = new List<Node>();
                 Node firstNode = new Node(null, currentPos, goals);
                 this.nodesToExpand.Add(firstNode);
 
-                bool encontrado = aStar(this.nodesToExpand, boardInfo, goals);
+                bool encontrado = aStar(this.nodesToExpand, boardInfo, goals, moves);
                 if (!encontrado)
                 {
                     print("Goal not found. \n");
@@ -102,7 +107,7 @@ namespace Assets.Scripts.Grupo5
                 //Mirar si no ha encontrado goal.
                 else
                 {
-
+                    this.movements = moves;
                 }
             }
             if (this.movements.Count == 0)
@@ -115,54 +120,6 @@ namespace Assets.Scripts.Grupo5
             }
         }
 
-        //Método comparatorio que usaremos en el sort.
-        private int compareNodesByDistance(Node x, Node y)
-        {
-            if (x == null)
-            {
-                if (y == null)
-                {
-                    return 0; //Si ambos son null, ambos son iguales
-                }
-                else
-                {
-                    return -1; //Si x es null pero y no, y es mas grande
-                }
-            }
-            else //Si x no es null
-            {
-                if (y == null)  // e y es null, x es mas grande
-                {
-                    return 1;
-                }
-                else //Si ni x ni y son null, los comparamos, primero por coste, despues por distancia
-                {
-                    if (x.getCell().WalkCost == y.getCell().WalkCost) //Si el coste es el mismo (como debería ser en esta práctica)
-                    {
-                        if (x.getDistance() >= y.getDistance()) //si X está mas lejos que y, x es mayor
-                        {
-                            return 1;
-                        }
-                        else
-                        {
-                            return -1; //Si no, y es mayor.
-                        }
-                    }
-                    else
-                    {
-                        if (x.getCell().WalkCost > y.getCell().WalkCost) //Si el coste de X es mayor, x es mayor.
-                        {
-                            return 1;
-                        }
-                        else
-                        {
-                            return -1;
-                        }
-                    }
-
-                }
-
-            }
-        }
+       
     }
 }
