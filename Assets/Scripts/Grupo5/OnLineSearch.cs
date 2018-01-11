@@ -15,11 +15,14 @@ namespace Assets.Scripts.Grupo5
         private Stack<Locomotion.MoveDirection> movements = null;
 
 
-        private Node onLineSearch(Node firstNode, BoardInfo boardInfo, CellInfo[] enemy)
+        private Node onLineSearch(Node firstNode, BoardInfo boardInfo, CellInfo[] enemy, CellInfo[] goals)
         {
+            bool isGoal = false;
             Node bestNode = null;
             List<Node> nodesToExpand = new List<Node>();
             List<Node> expandedNodes = new List<Node>();
+
+            alpha = float.MaxValue;
 
             firstNode.SetHorizon(1);
             nodesToExpand.Add(firstNode);
@@ -35,7 +38,7 @@ namespace Assets.Scripts.Grupo5
                 if (!(actualNode.getDistance() >= alpha))
                 {
                     //Si no hemos llegado al horizonte, expandimos.
-                    if (actualNode.GetHorizon() < 3)
+                    if (actualNode.GetHorizon() < horizon)
                     {
                         //Expandimos los sucesores de este nodo (expand ya hace que esos sucesores apunten al padre)
                         List<Node> sucessors = new List<Node>();
@@ -45,32 +48,43 @@ namespace Assets.Scripts.Grupo5
 
                         for (int i = 0; i < sucessors.Count; i++)
                         {
-                            print(sucessors[i].ToString());
-                            bool insertado = false;
-                            for (int j = 0; j < nodesToExpand.Count; j++)
+                            isGoal = false;
+                            for (int k = 0; k < goals.Length; k++)
                             {
-                                //Con el igual lo que hace es priorizar un camino ya que sabemos que al ser una parrilla, no vamos
-                                //a expandir dos veces lo mismo al avanzar en diagonal, ya que arriba derecha es igual que derecha arriba
-                                if (nodesToExpand[j].getDistance() >= sucessors[i].getDistance() && !insertado)
+                                if (goals[k] == sucessors[i].getCell())
                                 {
-                                    nodesToExpand.Insert(j, sucessors[i]);
-                                    print("Nodo: " + sucessors[i].ToString() + "se compara con "+ nodesToExpand[j].ToString() + ". Insertado");
-                                    insertado = true;
+                                    isGoal = true;
                                 }
                             }
-                            if (!insertado)
+                            if (!isGoal)
                             {
-                                nodesToExpand.Add(sucessors[i]);
-                                print("Nodo: " + sucessors[i].ToString() + " insertado al final.");
-                            }
-                            if (sucessors[i].GetHorizon() == horizon)
-                            {
-                                if (sucessors[i].getDistance() < alpha)
+                                print(sucessors[i].ToString());
+                                bool insertado = false;
+                                for (int j = 0; j < nodesToExpand.Count; j++)
                                 {
-                                    bestNode = sucessors[i];
-                                    alpha = bestNode.getDistance();
-                                    //nodesForChoice.Add(bestNode);
-                                    print("Nuevo alpha: " + alpha + "de " + bestNode.ToString());
+                                    //Con el igual lo que hace es priorizar un camino ya que sabemos que al ser una parrilla, no vamos
+                                    //a expandir dos veces lo mismo al avanzar en diagonal, ya que arriba derecha es igual que derecha arriba
+                                    if (nodesToExpand[j].getDistance() >= sucessors[i].getDistance() && !insertado)
+                                    {
+                                        nodesToExpand.Insert(j, sucessors[i]);
+                                        print("Nodo: " + sucessors[i].ToString() + "se compara con " + nodesToExpand[j].ToString() + ". Insertado");
+                                        insertado = true;
+                                    }
+                                }
+                                if (!insertado)
+                                {
+                                    nodesToExpand.Add(sucessors[i]);
+                                    print("Nodo: " + sucessors[i].ToString() + " insertado al final.");
+                                }
+                                if (sucessors[i].GetHorizon() == horizon)
+                                {
+                                    if (sucessors[i].getDistance() < alpha)
+                                    {
+                                        bestNode = sucessors[i];
+                                        alpha = bestNode.getDistance();
+                                        //nodesForChoice.Add(bestNode);
+                                        print("Nuevo alpha: " + alpha + "de " + bestNode.ToString());
+                                    }
                                 }
                             }
                         }
@@ -111,9 +125,48 @@ namespace Assets.Scripts.Grupo5
             List<EnemyBehaviour> enemies = boardInfo.Enemies;
             
             if (enemies.Count == 0)
-            {
-                //hacemos a*
-                return Locomotion.MoveDirection.None;
+            {   /*
+                bool encontrado = false;
+                List<Node> nodes = new List<Node>();
+                Node currentNode = new Node(null, currentPos, goals);
+                nodes.Add(currentNode);
+                OffLineSearchaStar astar = GetComponent<OffLineSearchaStar>();
+                encontrado = astar.aStar(nodes, boardInfo, goals);
+                print("RESULTADO A*    ASDASDASDASDASDA    " + encontrado);
+                movements = astar.movements;
+
+                while (movements.Count > 0)
+                {
+                    return astar.GetNextMove(boardInfo,currentPos, goals);
+                    
+                }
+                return Locomotion.MoveDirection.None;*/
+                CellInfo[] enemyInfo = new CellInfo[1];
+                enemyInfo[0] = enemies[0].CurrentPosition();
+                print("Caminable " + enemyInfo[0].Walkable);
+                if (enemyInfo[0].Walkable == true)
+                {
+                    Node firstNode = new Node(null, currentPos, enemyInfo);
+
+                    Node node = null;
+                    node = onLineSearch(firstNode, boardInfo, goals, null);
+                    if (node != null)
+                    {
+                        print("holahola" + node.ToString());
+                        while (node.getFather().getFather().getFather() != null)
+                        {
+                            node = node.getFather();
+                        }
+                        print(node.ToString());
+                        return node.getFather().getMovement();
+                    }
+                    else return Locomotion.MoveDirection.None;
+                }
+                else
+                {
+                    return Locomotion.MoveDirection.None;
+                }
+
             }
             else
             {
@@ -125,11 +178,16 @@ namespace Assets.Scripts.Grupo5
                     Node firstNode = new Node(null, currentPos, enemyInfo);
 
                     Node node = null;
-                    node = onLineSearch(firstNode, boardInfo, enemyInfo);
+                    node = onLineSearch(firstNode, boardInfo, enemyInfo, goals);
                     if (node != null)
                     {
+                        print("holahola" + node.ToString());
+                        while (node.getFather().getFather().getFather() != null)
+                        {
+                            node = node.getFather();
+                        }
                         print(node.ToString());
-                        return node.getMovement();
+                        return node.getFather().getMovement();
                     }
                     else return Locomotion.MoveDirection.None;
                 }
@@ -139,7 +197,6 @@ namespace Assets.Scripts.Grupo5
                 }
 
             }
-            
 
             
 

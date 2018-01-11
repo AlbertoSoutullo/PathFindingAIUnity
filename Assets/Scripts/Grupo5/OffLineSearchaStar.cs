@@ -12,12 +12,12 @@ namespace Assets.Scripts.Grupo5
         static int numNodosExpandidos=0;
 
         //Lista de Movimientos que va a devolver nuestro algoritmo
-        private Stack<Locomotion.MoveDirection> movements = null;
+        public Stack<Locomotion.MoveDirection> movements = null;
         private List<Node> nodesToExpand = null;
         private List<Node> expandedNodes = new List<Node>();
 
 
-        private bool aStar(List<Node> nodesToExpand, BoardInfo boardInfo, CellInfo[] goals)
+        public bool aStar(List<Node> nodesToExpand, BoardInfo boardInfo, CellInfo[] goals)
         {
             //variablle para ver si ya se ha insertado el nodo en el
             bool insertado = false;
