@@ -103,7 +103,12 @@ namespace Assets.Scripts.Grupo5
                     }
                 }
             }
-            return bestNode;
+            Node aux = bestNode;
+            while (aux.getFather() != firstNode)
+            {
+                aux = aux.getFather();
+            }
+            return aux;
         }
 
         /*Método para ordenar enemigos
@@ -150,18 +155,19 @@ namespace Assets.Scripts.Grupo5
                     if (node != null)
                     {
                         print("holahola" + node.ToString());
-                        while (node.getFather().getFather().getFather() != null)
+                        /*while (node.getFather().getFather().getFather() != null)
                         {
                             node = node.getFather();
                         }
+                        */
                         print(node.ToString());
 
                         if (exitLoops)
                         {
-                            if (node.getFather().getMovement() == Locomotion.MoveDirection.Up) loopIterations[0]++;
-                            if (node.getFather().getMovement() == Locomotion.MoveDirection.Right) loopIterations[1]++;
-                            if (node.getFather().getMovement() == Locomotion.MoveDirection.Down) loopIterations[2]++;
-                            if (node.getFather().getMovement() == Locomotion.MoveDirection.Left) loopIterations[3]++;
+                            if (node.getMovement() == Locomotion.MoveDirection.Up) loopIterations[0]++;
+                            if (node.getMovement() == Locomotion.MoveDirection.Right) loopIterations[1]++;
+                            if (node.getMovement() == Locomotion.MoveDirection.Down) loopIterations[2]++;
+                            if (node.getMovement() == Locomotion.MoveDirection.Left) loopIterations[3]++;
                             loopIterations[4]++;
 
                             if (loopIterations[4] == maxLoopMovements)
@@ -180,7 +186,7 @@ namespace Assets.Scripts.Grupo5
                         }
                         
 
-                        return node.getFather().getMovement();
+                        return node.getMovement();
                     }
                     else return Locomotion.MoveDirection.None;
                 }
