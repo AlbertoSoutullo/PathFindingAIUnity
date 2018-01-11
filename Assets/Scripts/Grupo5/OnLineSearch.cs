@@ -13,13 +13,13 @@ namespace Assets.Scripts.Grupo5
         private float alpha = float.MaxValue;
 
         private Stack<Locomotion.MoveDirection> movements = null;
-        private List<Node> expandedNodes = new List<Node>();
 
-        private bool onLineSearch(Node firstNode, BoardInfo boardInfo, CellInfo[] goals)
+
+        private Node onLineSearch(Node firstNode, BoardInfo boardInfo, CellInfo[] enemy)
         {
             Node bestNode = null;
             List<Node> nodesToExpand = new List<Node>();
-            List<Node> nodesForChoice = new List<Node>();
+            List<Node> expandedNodes = new List<Node>();
 
             firstNode.SetHorizon(1);
             nodesToExpand.Add(firstNode);
@@ -32,15 +32,17 @@ namespace Assets.Scripts.Grupo5
                 nodesToExpand.RemoveAt(0);
                 numNodosExpandidos++;
 
-                if (!(actualNode.getDistance() > alpha))
+                if (!(actualNode.getDistance() >= alpha))
                 {
                     //Si no hemos llegado al horizonte, expandimos.
                     if (actualNode.GetHorizon() < 3)
                     {
                         //Expandimos los sucesores de este nodo (expand ya hace que esos sucesores apunten al padre)
                         List<Node> sucessors = new List<Node>();
-                        sucessors = actualNode.Expand(boardInfo, goals, this.expandedNodes);
+                        sucessors = actualNode.Expand(boardInfo, enemy, expandedNodes);
                         print("Sucesores : " + sucessors.Count);
+
+
                         for (int i = 0; i < sucessors.Count; i++)
                         {
                             print(sucessors[i].ToString());
@@ -49,14 +51,14 @@ namespace Assets.Scripts.Grupo5
                             {
                                 //Con el igual lo que hace es priorizar un camino ya que sabemos que al ser una parrilla, no vamos
                                 //a expandir dos veces lo mismo al avanzar en diagonal, ya que arriba derecha es igual que derecha arriba
-                                if (nodesToExpand[j].getDistance() >= sucessors[i].getDistance() && !insertado && sucessors[i].GetHorizon() < 3)
+                                if (nodesToExpand[j].getDistance() >= sucessors[i].getDistance() && !insertado)
                                 {
                                     nodesToExpand.Insert(j, sucessors[i]);
                                     print("Nodo: " + sucessors[i].ToString() + "se compara con "+ nodesToExpand[j].ToString() + ". Insertado");
                                     insertado = true;
                                 }
                             }
-                            if (!insertado && sucessors[i].GetHorizon() < 3)
+                            if (!insertado)
                             {
                                 nodesToExpand.Add(sucessors[i]);
                                 print("Nodo: " + sucessors[i].ToString() + " insertado al final.");
@@ -67,7 +69,7 @@ namespace Assets.Scripts.Grupo5
                                 {
                                     bestNode = sucessors[i];
                                     alpha = bestNode.getDistance();
-                                    nodesForChoice.Add(bestNode);
+                                    //nodesForChoice.Add(bestNode);
                                     print("Nuevo alpha: " + alpha + "de " + bestNode.ToString());
                                 }
                             }
@@ -75,6 +77,7 @@ namespace Assets.Scripts.Grupo5
                     }
                 }
             }
+            /*
             Node aux = bestNode;
             int backSteps = 0;
             do
@@ -84,7 +87,9 @@ namespace Assets.Scripts.Grupo5
                 backSteps++;
 
             } while ((aux.getFather() != null) && (backSteps < 3) );
-            return true;
+            */
+            //print("Best node: " + bestNode.ToString());
+            return bestNode;
         }
 
         /*Método para ordenar enemigos
@@ -96,12 +101,50 @@ namespace Assets.Scripts.Grupo5
         public override void Repath()
         {
             movements = new Stack<Locomotion.MoveDirection>();
-            expandedNodes = new List<Node>();
+            
 
         }
 
         public override Locomotion.MoveDirection GetNextMove(BoardInfo boardInfo, CellInfo currentPos, CellInfo[] goals)
         {
+
+            List<EnemyBehaviour> enemies = boardInfo.Enemies;
+            
+            if (enemies.Count == 0)
+            {
+                //hacemos a*
+                return Locomotion.MoveDirection.None;
+            }
+            else
+            {
+                CellInfo[] enemyInfo = new CellInfo[1];
+                enemyInfo[0] = enemies[0].CurrentPosition();
+                print("Caminable " + enemyInfo[0].Walkable);
+                if (enemyInfo[0].Walkable == true)
+                {
+                    Node firstNode = new Node(null, currentPos, enemyInfo);
+
+                    Node node = null;
+                    node = onLineSearch(firstNode, boardInfo, enemyInfo);
+                    if (node != null)
+                    {
+                        print(node.ToString());
+                        return node.getMovement();
+                    }
+                    else return Locomotion.MoveDirection.None;
+                }
+                else
+                {
+                    return Locomotion.MoveDirection.None;
+                }
+
+            }
+            
+
+            
+
+
+            /*
             if (this.movements == null)
             {
                 List<EnemyBehaviour> enemies = boardInfo.Enemies;
@@ -134,7 +177,8 @@ namespace Assets.Scripts.Grupo5
                 print(moveAux);
                 return moveAux;
             }
-            
+            */
+
         }
 
 
