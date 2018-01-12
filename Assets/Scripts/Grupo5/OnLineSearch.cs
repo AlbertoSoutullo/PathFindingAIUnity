@@ -178,6 +178,7 @@ namespace Assets.Scripts.Grupo5
             {
                 CellInfo[] enemyInfo = new CellInfo[1];
                 enemyInfo[0] = enemies[0].CurrentPosition();
+                print("POSICION DEL ENEMIGO: " + enemyInfo[0].GetPosition);
                 if (enemyInfo[0].Walkable == true)
                 {
                     Node firstNode = new Node(null, currentPos, enemyInfo);

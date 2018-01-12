@@ -30,12 +30,10 @@ namespace Assets.Scripts.Grupo5
          /// <returns>bool: True If actualNode is an objective. False if not.</returns>
         private bool IsObjective(Node actualNode, CellInfo[] objectives, Stack<Locomotion.MoveDirection> movementsToDo)
         {
-            //si ese nodo es goal, hemos acabado
             for (int i = 0; i < objectives.Length; i++)
             {
                 if (actualNode.GetCell() == objectives[i])
                 {
-                    numExpandedNodes--;
 
                     Node aux = actualNode;
                     do
@@ -116,7 +114,7 @@ namespace Assets.Scripts.Grupo5
                 Node       actualNode      = nodesToExpand[0];
 
                 nodesToExpand.RemoveAt(0); //We get the first node out of the list
-                numExpandedNodes++;
+
 
                 isNodeObjective = IsObjective(actualNode, objectives, movements); //If it's goal we ended.
                 if (isNodeObjective) return true;
@@ -138,6 +136,7 @@ namespace Assets.Scripts.Grupo5
                     this.expandedNodes.Add(actualNode);
                     sucessors = actualNode.Expand(boardInfo, objectives, this.expandedNodes); //If it's not goal, we expand.
                     InsertSucessors(sucessors, nodesToExpand);
+                    numExpandedNodes++;
                 }
             }
             Debug.Log("Solution not found. \n");
