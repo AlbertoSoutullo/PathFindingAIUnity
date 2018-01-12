@@ -33,17 +33,17 @@ namespace Assets.Scripts.Grupo5
             //si ese nodo es goal, hemos acabado
             for (int i = 0; i < objectives.Length; i++)
             {
-                if (actualNode.getCell() == objectives[i])
+                if (actualNode.GetCell() == objectives[i])
                 {
                     numExpandedNodes--;
 
                     Node aux = actualNode;
                     do
                     {
-                        movementsToDo.Push(aux.getMovement());
-                        aux = aux.getFather();
+                        movementsToDo.Push(aux.GetMovement());
+                        aux = aux.GetFather();
 
-                    } while (aux.getFather() != null);
+                    } while (aux.GetFather() != null);
                     print("Total number of Nodes expanded: " + numExpandedNodes);
                     return true;
                 }
@@ -68,7 +68,7 @@ namespace Assets.Scripts.Grupo5
                     {
                         //As we know this is a square map and there is not diagonal moves, we check if the distance is >=,
                         //with this, we are not going to expand the same path 2 times, because it will do it in depth.
-                        if (nodesToExpand[j].getDistance() >= sucessors[i].getDistance() && !insertedNode)
+                        if (nodesToExpand[j].GetDistance() >= sucessors[i].GetDistance() && !insertedNode)
                         {
                             nodesToExpand.Insert(j, sucessors[i]);
                             insertedNode = true;
@@ -76,7 +76,14 @@ namespace Assets.Scripts.Grupo5
                     }
                     else
                     {
-                        if (nodesToExpand[j].getDistance() > sucessors[i].getDistance() && !insertedNode)
+                        for (int k = 0; k < this.expandedNodes.Count; k++)
+                        {
+                            if (String.Equals(expandedNodes[k].GetCell().CellId, sucessors[i].GetCell().CellId))
+                            {
+                                insertedNode = true;
+                            }
+                        }
+                        if (nodesToExpand[j].GetDistance() > sucessors[i].GetDistance() && !insertedNode)
                         {
                             nodesToExpand.Insert(j, sucessors[i]);
                             insertedNode = true;
@@ -103,7 +110,8 @@ namespace Assets.Scripts.Grupo5
             //While there is nodes to expand left
             while (nodesToExpand.Count > 0)
             {
-                bool       isNodeObjective = false;
+                bool       found           = false;
+                bool       isNodeObjective = false; 
                 List<Node> sucessors       = new List<Node>();
                 Node       actualNode      = nodesToExpand[0];
 
@@ -116,9 +124,21 @@ namespace Assets.Scripts.Grupo5
                 print("Node to expand: "           + actualNode.ToString());
                 print("Number of expanded Nodes :" + numExpandedNodes);
 
-                sucessors = actualNode.Expand(boardInfo, objectives, this.expandedNodes); //If it's not goal, we expand.
-
-                InsertSucessors(sucessors, nodesToExpand);
+                //We look if the Node we will expand was already expanded.
+                for (int i = 0; i < this.expandedNodes.Count; i++)
+                {
+                    if (expandedNodes[i].IsEqual(actualNode))
+                    {
+                        found = true;
+                        break;
+                    }         
+                }
+                if (!found)
+                {
+                    this.expandedNodes.Add(actualNode);
+                    sucessors = actualNode.Expand(boardInfo, objectives, this.expandedNodes); //If it's not goal, we expand.
+                    InsertSucessors(sucessors, nodesToExpand);
+                }
             }
             Debug.Log("Solution not found. \n");
             return false;
@@ -134,7 +154,7 @@ namespace Assets.Scripts.Grupo5
         /// <param name="boardInfo">Information of the Board.</param>
         /// <param name="currentPos">Actual position of our Character.</param>
         /// <param name="objectives">Array of objectives we want to reach.</param>
-        /// <returns></returns>
+        /// <returns>A movement.</returns>
         public override Locomotion.MoveDirection GetNextMove(BoardInfo boardInfo, CellInfo currentPos, CellInfo[] objectives)
         {
             if (this.movements == null)
@@ -147,6 +167,10 @@ namespace Assets.Scripts.Grupo5
                 if (!existsSolution)
                 {
                     print("Goal not found. \n");
+                    while (true)
+                    {
+                        return Locomotion.MoveDirection.None;
+                    }
                 }
                 else
                 {

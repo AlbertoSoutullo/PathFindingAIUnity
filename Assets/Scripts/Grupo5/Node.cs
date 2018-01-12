@@ -6,67 +6,70 @@ using System;
 
 namespace Assets.Scripts.Grupo5
 {
-
+    /// <summary>
+    /// Node class.
+    /// </summary>
     public class Node
     {
-        //En los nodos guardamos la dirección del padre, la información de la celda, y el movimiento que
-        //deberíamos tomar para llegar a goal.
-        //Esta bíen planteado tener que cambiar la clase nodo de la práctica 1 a la 2?
-        private Node father { get; set; }
+        private Node Father { get; set; }
         private CellInfo cell;
         private Locomotion.MoveDirection movement;
-        private float distance = 0;
-        private float totalWalkCost;
-        private int horizon = 0;
-        private static int numberNodes = 0;
-        private int id;
 
-        public CellInfo getCell()
-        {
-            return cell;
-        }
+        private float      totalWalkCost = 0;
+        private float      distance      = 0;
+        private int        horizon       = 0;
+        private static int numberNodes   = 0;
+        private int        id            = 0;
 
-        public Locomotion.MoveDirection getMovement()
-        {
-            return movement;
-        }
-
-
-        //Constructor de nodo, donde deberíamos pasarle el padre y los datos, que sería la informacion
-        //de la celda en la que está el personaje
+        /// <summary>
+        /// Node constructor.
+        /// </summary>
+        /// <param name="father">Father of the Node.</param>
+        /// <param name="cell">Information of this Node.</param>
+        /// <param name="goals">Objectives of this Node.</param>
         public Node(Node father, CellInfo cell, CellInfo[] goals)
         {
-            this.id = numberNodes;
-            this.cell = cell;
-            this.father = father;
-            this.movement = getDirection();
-            this.totalWalkCost = calculateWalkCost();
-            this.distance = calculateDistance(goals);
-            if (this.father == null)
+            this.id            = numberNodes;
+            this.cell          = cell;
+            this.Father        = father;
+            this.movement      = GetDirection();
+            this.totalWalkCost = CalculateWalkCost();
+            this.distance      = CalculateDistance(goals);
+
+            if (this.Father == null)
             {
                 this.horizon = 1;
             }
             else
             {
-                this.horizon = this.father.horizon + 1;
+                this.horizon = this.Father.horizon + 1;
             }
-            
             numberNodes++;
         }
 
-        private float calculateWalkCost()
+        /// <summary>
+        /// Calculates the acumulative walk cost of a Node.
+        /// </summary>
+        /// <returns>Acumulative walk cost of a node.</returns>
+        private float CalculateWalkCost()
         {
-            if (this.father == null)
+            if (this.Father == null)
             {
                 return 0;
             }
             else
             {
-                return (this.cell.WalkCost + this.father.totalWalkCost);
+                return (this.cell.WalkCost + this.Father.totalWalkCost);
             }  
         }
 
-        //Método para expandir los nodos a partir del nodo en el que nos encontramos.
+        /// <summary>
+        /// This method expand the sucessors of a Node.
+        /// </summary>
+        /// <param name="boardInfo">Information of the Board.</param>
+        /// <param name="goals">Objectives.</param>
+        /// <param name="expandedNodes">Nodes that are already expanded.</param>
+        /// <returns></returns>
         public List<Node> Expand(BoardInfo boardInfo, CellInfo[] goals, List<Node> expandedNodes)
         {
             List<CellInfo> cells = new List<CellInfo>();
@@ -79,19 +82,16 @@ namespace Assets.Scripts.Grupo5
             {
                 if (cells[i] != null)
                 {
-                    if (this.father == null) //si es el primer nodo
+                    if (this.Father == null) //si es el primer nodo
                     {
                         Node aux = new Node(this, cells[i], goals);                      
-                        //Debug.Log(this.ToString());
                         auxList.Add(aux);
-
                     }
                     else
                     {
-                        if (!String.Equals(cells[i].CellId, this.father.getCell().CellId))
+                        if (!String.Equals(cells[i].CellId, this.Father.GetCell().CellId))
                         {
                             Node aux = new Node(this, cells[i], goals);
-                            //Debug.Log(this.ToString());
                             auxList.Add(aux);
                         }
                     }
@@ -99,37 +99,39 @@ namespace Assets.Scripts.Grupo5
             }
             for (int i = 0; i < auxList.Count; i++)
             {
-                bool found = false; //flag para mirar si los sucesores no han sido metidos ya en la lista de nodos expandidos.
+                bool found = false; 
                 for (int j = 0; j < expandedNodes.Count; j++)
                 {
-                    if (expandedNodes[j].isEqual(auxList[i]))
+                    if (expandedNodes[j].IsEqual(auxList[i]))
                         found = true;
                 }
                 if (!found)
                 {
                     nodes.Add(auxList[i]);
-                    expandedNodes.Add(auxList[i]);
                 }
             }
             return nodes;
         }
 
-        public Locomotion.MoveDirection getDirection()
+        /// <summary>
+        /// This method calculates Direction depending of the father.
+        /// </summary>
+        /// <returns>Direction needed to reach that Node.</returns>
+        public Locomotion.MoveDirection GetDirection()
         {
-            //Si el padre es null, osea, si es el primer nodo, no tendrá movimiento.
-            if (this.father == null)
+            if (this.Father == null)
             {
                 return Locomotion.MoveDirection.None;
             }
             else
             {
-                int column = this.cell.ColumnId - father.cell.ColumnId;
-                int row = this.cell.RowId - father.cell.RowId;
+                int column = this.cell.ColumnId - Father.cell.ColumnId;
+                int row    = this.cell.RowId    - Father.cell.RowId;
 
                 if (column == 0)
                 {
                     if (row > 0) return Locomotion.MoveDirection.Up;
-                    else return Locomotion.MoveDirection.Down;
+                    else return  Locomotion.MoveDirection.Down;
                 }
                 else
                 {
@@ -139,17 +141,20 @@ namespace Assets.Scripts.Grupo5
             }
         }
 
-        //Calculamos el coste de este nodo para poder usarlo en la comparación del sort.
-        public float calculateDistance(CellInfo[] goals)
+        /// <summary>
+        /// This method calculates Distance between a Node and the objective.
+        /// </summary>
+        /// <param name="goals"></param>
+        /// <returns></returns>
+        public float CalculateDistance(CellInfo[] goals)
         {
-            int column = Math.Abs(this.getCell().ColumnId - goals[0].ColumnId);
-            int row = Math.Abs(this.getCell().RowId - goals[0].RowId);
-            float dist = column + row;
-            dist += this.totalWalkCost;
+            int    column = Math.Abs(this.GetCell().ColumnId - goals[0].ColumnId);
+            int    row    = Math.Abs(this.GetCell().RowId    - goals[0].RowId);
+            float  dist   = column + row + this.totalWalkCost;
             return dist;
         }
 
-        public float getDistance()
+        public float GetDistance()
         {
             return this.distance;
         }
@@ -160,7 +165,7 @@ namespace Assets.Scripts.Grupo5
             return text;
         }
 
-        public bool isEqual(Node node)
+        public bool IsEqual(Node node)
         {
             if ((this.cell.ColumnId == node.cell.ColumnId) && (this.cell.RowId == node.cell.RowId))
                 return true;
@@ -168,9 +173,9 @@ namespace Assets.Scripts.Grupo5
                 return false;
         }
 
-        public Node getFather()
+        public Node GetFather()
         {
-            return this.father;
+            return this.Father;
         }
 
         public int GetHorizon()
@@ -181,6 +186,16 @@ namespace Assets.Scripts.Grupo5
         public void SetHorizon(int horizon)
         {
             this.horizon = horizon;
+        }
+
+        public CellInfo GetCell()
+        {
+            return cell;
+        }
+
+        public Locomotion.MoveDirection GetMovement()
+        {
+            return movement;
         }
     }
     
